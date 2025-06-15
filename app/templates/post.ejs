@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>
+    <%= post.title %> | Appoblog
+  </title>
+
+
+  <style>
+    /* Global resets */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: #f9f9f9;
+    }
+
+    .container {
+      margin: auto;
+      background: #fff;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    header {
+      position: relative;
+      padding: 1.5rem;
+      background: #007acc;
+      color: #fff;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .back-link,
+    .actions a,
+    .actions button {
+      background: transparent;
+      border: none;
+      padding: 0.25rem;
+      cursor: pointer;
+    }
+
+    .back-link svg,
+    .actions svg {
+      width: 24px;
+      height: 24px;
+      fill: #fff;
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .upper-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    .meta {
+      font-size: 0.9rem;
+      opacity: 0.9;
+      margin-top: 0.25rem;
+    }
+
+    hr.separator {
+      border: none;
+      border-top: 2px solid #ececec;
+    }
+
+    #content {
+      padding: 1.5rem;
+      font-size: 1.1rem;
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 1.5rem;
+      }
+
+      .time {
+        display: none;
+      }
+
+      svg {
+        width: 20px !important;
+        height: 20px !important;
+      }
+    }
+
+    #deleteBtn:disabled {
+      color: #ccc;
+    }
+
+    /* Make blockquotes stand out */
+    blockquote {
+      border-left: 4px solid #007acc;
+      /* colored bar on the left */
+      background: #f0f8ff;
+      /* very light blue background */
+      padding: 0.5rem;
+      /* space inside the quote */
+      margin: 1.5rem 0;
+      /* vertical spacing */
+      color: #333;
+      /* text color */
+    }
+
+    /* Headings inside a blockquote */
+    blockquote h1,
+    blockquote h2,
+    blockquote h3,
+    blockquote h4,
+    blockquote h5,
+    blockquote h6 {
+      color: #005a9c;
+      /* a slightly darker accent */
+    }
+
+    /* Horizontal rules inside a blockquote */
+    blockquote hr {
+      border: none;
+      border-top: 1px solid #ccc;
+      margin: 1rem 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <div class="upper-header">
+        <a class="back-link" href="/" aria-label="Back to all posts">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z" />
+          </svg>
+        </a>
+        <h1>
+          <%= post.title %>
+        </h1>
+        <div class="actions">
+          <a href="/edit-post?id=<%= post.uuid %>" aria-label="Edit post">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+              <path
+                d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z" />
+            </svg>
+          </a>
+          <button aria-label="Delete post" id="deleteBtn" data-id=<%= post.uuid%> >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+              <path
+                d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360Zm-80-440v520-520Z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="meta">
+        By <strong>
+          <%= post.author %>
+        </strong>
+        <span class="time">| Created
+          <time datetime="<%= new Date(post.createdAt).toISOString() %>">
+            <%= new Date(post.createdAt).toLocaleString() %>
+          </time>
+          | Updated
+          <time datetime="<%= new Date(post.updatedAt).toISOString() %>">
+            <%= new Date(post.updatedAt).toLocaleString() %>
+          </time>
+        </span>
+      </div>
+    </header>
+
+    <hr class="separator" />
+
+    <textarea id="rawContent" style="display:none"><%- post.content %></textarea>
+    <div id="content"></div>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+      marked.setOptions({ gfm: true, breaks: true });
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const ta = document.getElementById("rawContent");
+        let rawMd = ta.value
+        document.getElementById("content").innerHTML = marked.parse(rawMd);
+      })
+
+      const deleteBtn = document.getElementById("deleteBtn");
+
+      deleteBtn.onclick = async (e) => {
+        deleteBtn.disabled = true;
+        const id = deleteBtn.dataset.id;
+        const confirm = window.confirm("You are about to delete this post. This is an unreversable action. Are you sure you want to proceed?");
+        if (!confirm) {deleteBtn.disabled = false; return};
+        const payload = {id};
+        try {
+          const res = await fetch("/delete-post", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+          });
+  
+          if (res.redirected) {window.location.href=res.url; return};
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error);
+        } catch (err) {
+          alert(err.message || err);
+        } finally {
+          deleteBtn.disabled = false;
+        }
+      }
+    </script>
+</body>
+</html>

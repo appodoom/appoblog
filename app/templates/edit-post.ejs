@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit Post | Appoblog</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 2rem;
+        background: #f9f9f9;
+        color: #333;
+      }
+      .container {
+        max-width: 700px;
+        margin: auto;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 1.5rem;
+        font-size: 2rem;
+        color: #007acc;
+      }
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      label {
+        font-weight: bold;
+        margin-bottom: 0.25rem;
+      }
+      input[type="text"],
+      textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 1rem;
+        resize: vertical;
+        padding-right: 0;
+        font-family: inherit;
+      }
+      textarea {
+        height: 300px;
+      }
+      .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        margin-top: 1.5rem;
+      }
+      .btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .btn-submit {
+        background: #007acc;
+        color: #fff;
+      }
+      .btn-cancel {
+        background: #ccc;
+        color: #333;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .error {
+        color: #c00;
+        margin-bottom: 1rem;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Edit Post</h1>
+      <div role="alert" class="error" id="errorMessage"></div>
+
+      <form>
+        <input type="hidden" name="id" value="<%= post.uuid %>" />
+
+        <div>
+          <label for="title">Title</label>
+          <input
+            id="title"
+            name="title"
+            type="text"
+            value="<%= post.title %>"
+          />
+        </div>
+
+        <div>
+          <label for="author">Author</label>
+          <input
+            id="author"
+            name="author"
+            type="text"
+            value="<%= post.author %>"
+          />
+        </div>
+
+        <div>
+          <label for="content">Content (Markdown)</label>
+          <textarea id="content" name="content"><%= post.content %></textarea>
+        </div>
+
+        <div class="actions">
+          <a href="/post?id=<%= post.uuid %>" class="btn btn-cancel">Cancel</a>
+          <button
+            id="submit"
+            type="submit"
+            class="btn btn-submit"
+            data-id="<%=post.uuid%>"
+          >
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </body>
+  <script>
+    const form = document.querySelector("form");
+    const submit = document.getElementById("submit");
+    const errorMessage = document.getElementById("errorMessage");
+    form.onsubmit = async (e) => {
+      submit.disabled = true;
+      e.preventDefault();
+      const payload = {
+        title: form.title.value,
+        author: form.author.value,
+        content: form.content.value,
+      };
+      const id = submit.dataset.id;
+      try {
+        const res = await fetch(`/edit-post?id=${id}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+        if (res.redirected) {
+          window.location.href = res.url;
+          return;
+        }
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+      } catch (err) {
+        errorMessage.textContent = err.message;
+        errorMessage.style.display = "block";
+      } finally {
+        submit.disabled = false;
+      }
+    };
+  </script>
+</html>

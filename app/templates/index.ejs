@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Appoblog</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 2rem;
+        background: #f9f9f9;
+        color: #333;
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+      h1 {
+        margin: 0;
+        font-size: 2rem;
+      }
+      .create-post {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: #007acc;
+        border-radius: 50%;
+        text-decoration: none;
+      }
+      .create-post svg {
+        width: 24px;
+        height: 24px;
+        fill: #fff;
+      }
+      .posts {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+      .post-card {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+      }
+      .post-card h2 {
+        margin-top: 0;
+        font-size: 1.25rem;
+      }
+      .post-card h2 a {
+        text-decoration: none;
+        color: #007acc;
+      }
+      .post-card h2 a:hover {
+        text-decoration: underline;
+      }
+      .meta {
+        font-size: 0.875rem;
+        color: #666;
+        margin-bottom: 0.75rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>Welcome to Appoblog</h1>
+      <a href="/create-post" class="create-post" aria-label="Create new post">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+          <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
+        </svg>
+      </a>
+    </div>
+
+    <% if (posts && posts.length) { %>
+    <div class="posts">
+      <% for (const post of posts) { %>
+      <article class="post-card">
+        <h2>
+          <a href="/post?id=<%= post.uuid %>"><%= post.title %></a>
+        </h2>
+        <div class="meta">
+          <div>Author: <strong><%= post.author %></strong></div>
+          <div>
+            Created:
+            <time datetime="<%= new Date(post.createdAt).toISOString() %>">
+              <%= new Date(post.createdAt).toLocaleString() %>
+            </time>
+          </div>
+          <div>
+            Updated:
+            <time datetime="<%= new Date(post.updatedAt).toISOString() %>">
+              <%= new Date(post.updatedAt).toLocaleString() %>
+            </time>
+          </div>
+        </div>
+      </article>
+      <% } %>
+    </div>
+    <% } else { %>
+    <p>No posts available.</p>
+    <% } %>
+  </body>
+</html>

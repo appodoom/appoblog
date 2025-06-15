@@ -1,0 +1,36 @@
+{
+  "name": "appoblog",
+  "version": "1.0.0",
+  "description": "Blog website for appodoom",
+  "license": "MIT",
+  "author": "maxovicsteiner",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "watch:ts": "tsc -w",
+    "clean:dist": "rimraf dist/ && npx tsc",
+    "watch:js": "nodemon -L ./dist/index.js"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/cookie-parser": "^1.4.9",
+    "@types/ejs": "^3.1.5",
+    "@types/express": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.9",
+    "nodemon": "^3.1.10",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^16.5.0",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.16.0",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.7",
+    "uuid": "^11.1.0"
+  }
+}
