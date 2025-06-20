@@ -78,14 +78,80 @@
         margin-bottom: 1rem;
         display: none;
       }
+      input[type="file"] {
+        display: none;
+      }
+
+      #upload_assets {
+        display: flex;
+        gap: 10px;
+        flex-direction: row;
+        align-items: center;
+        justify-content: end;
+        padding-inline: 10px;
+      }
+
+      .file-upload-btn {
+        background-color: #007acc;
+        color: white;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        width: fit-content;
+        border-radius: 4px;
+        padding: 5px;
+      }
+
+      .file-upload-btn svg {
+        fill: white;
+      }
+
+      .file-upload-btn.disabled {
+        background-color: #ccc;
+      }
+      .file-upload-btn.disabled svg {
+        fill: gray;
+      }
+      #upload_submit {
+        background: none;
+        color: #007acc;
+        font-size: 1.1rem;
+        border: none;
+        cursor: pointer;
+        text-decoration: underline;
+      }
+
+      #upload_submit:disabled {
+        color: rgb(163, 163, 163);
+        cursor: not-allowed;
+      }
     </style>
   </head>
   <body>
     <div class="container">
       <h1>Edit Post</h1>
+      <form id="upload_assets">
+        <label for="fileUpload" class="file-upload-btn">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="24px"
+            viewBox="0 -960 960 960"
+            width="24px"
+            fill="#e3e3e3"
+          >
+            <path
+              d="M440-320v-326L336-542l-56-58 200-200 200 200-56 58-104-104v326h-80ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"
+            />
+          </svg>
+        </label>
+        <input type="file" name="fileUpload" multiple id="fileUpload" />
+        <button type="submit" id="upload_submit">Upload assets</button>
+      </form>
       <div role="alert" class="error" id="errorMessage"></div>
 
-      <form>
+      <form id="main_data">
         <input type="hidden" name="id" value="<%= post.uuid %>" />
 
         <div>
@@ -128,7 +194,38 @@
     </div>
   </body>
   <script>
-    const form = document.querySelector("form");
+    const uploadForm = document.getElementById("upload_assets");
+    const uploadSubmit = document.getElementById("upload_submit");
+    const uploadLabel = document.querySelector(".file-upload-btn");
+    uploadForm.onsubmit = async (e) => {
+      e.preventDefault();
+      errorMessage.style.display = "none";
+      uploadLabel.classList.add("disabled");
+      uploadSubmit.disabled = true;
+      const payload = new FormData();
+      const files = uploadForm.fileUpload.files;
+      for (let i = 0; i < files.length; i++) {
+        payload.append("fileUpload", files[i]);
+      }
+      try {
+        const res = await fetch("/assets", {
+          method: "POST",
+          body: payload,
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error);
+        }
+      } catch (err) {
+        errorMessage.style.display = "block";
+        errorMessage.innerText = err;
+      } finally {
+        uploadSubmit.disabled = false;
+        uploadLabel.classList.remove("disabled");
+        uploadForm.reset();
+      }
+    };
+    const form = document.getElementById("main_data");
     const submit = document.getElementById("submit");
     const errorMessage = document.getElementById("errorMessage");
     form.onsubmit = async (e) => {

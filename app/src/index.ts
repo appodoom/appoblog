@@ -8,10 +8,11 @@ import jwt from "jsonwebtoken";
 import { fileURLToPath } from "url";
 
 // internal imports
-import { protectRoute } from "./middlewares/index.js";
+import { protectRoute, uploadMiddleware } from "./middlewares/index.js";
 import { authenticateDb } from "./db/index.js";
-import { validate } from "./utils/index.js";
+import { validate, cleanupTempFiles } from "./utils/index.js";
 import { Post } from "./models/index.js";
+import { createS3Client, getS3MarkdownLink, uploadToS3 } from "./s3/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,7 +22,7 @@ dotenv.config();
 (async () => {
   // connect to database
   await authenticateDb();
-
+  const s3 = createS3Client();
   const app = express();
   app.use(express.json());
   app.use(cookieParser());
@@ -60,6 +61,19 @@ dotenv.config();
 
   app.get("/login", (_req, res) => {
     res.render("login");
+  });
+
+  app.get("/assets/:postid", protectRoute, async (req, res) => {
+    const postId = req.params.postid;
+    if (!validate(1, postId)) res.status(404).redirect("/404");
+    try {
+      const markdownLink = await getS3MarkdownLink(postId, s3);
+      if (!validate(1, markdownLink)) return res.status(404).redirect("/404");
+      res.status(302).redirect(markdownLink);
+    } catch (err: any) {
+      console.log(err.message);
+      return res.status(404).redirect("/404");
+    }
   });
 
   // -----------------------------------------------------------
@@ -145,6 +159,31 @@ dotenv.config();
     }
     res.status(200).redirect(`/post?id=${id as string}`);
   });
+
+  app.post(
+    "/assets",
+    protectRoute,
+    uploadMiddleware().array("fileUpload", 10),
+    async (req, res) => {
+      try {
+        if (
+          !req.files ||
+          !(req.files instanceof Array) ||
+          req.files.length === 0
+        ) {
+          res.status(400).json({ error: "No files uploaded." });
+          return;
+        }
+        for (const file of req.files) {
+          await uploadToS3(s3, file.path, file.originalname, file.mimetype);
+        }
+        cleanupTempFiles(req.files);
+        res.sendStatus(200);
+      } catch (error) {
+        res.status(400).json({ error: "Upload error" });
+      }
+    }
+  );
 
   app.use((_req, res) => res.render("404"));
 

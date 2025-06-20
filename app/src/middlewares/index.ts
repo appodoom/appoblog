@@ -1,3 +1,3 @@
 import { protectRoute } from "./protectRoute.js";
-
-export { protectRoute };
+import { uploadMiddleware } from "./uploadFile.js";
+export { protectRoute, uploadMiddleware };

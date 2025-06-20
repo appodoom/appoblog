@@ -1,3 +1,3 @@
 import { validate } from "./validate.js";
-
-export { validate };
+import { cleanupTempFiles } from "./cleanup.js";
+export { validate, cleanupTempFiles };
